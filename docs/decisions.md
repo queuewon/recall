@@ -14,3 +14,7 @@
 2026-07-07 | 노트 저작권은 사용자 소유, 서비스는 처리 라이선스만·학습 데이터 미사용 원칙 | 약관 실물은 공개 전 작업, 원칙만 선기록
 2026-07-08 | verify-gate.sh에 `|| true` 추가 (게이밍 감지 카운트 파이프라인 3곳) | frontend/ 부재 시 pipefail로 침묵 사망하던 버그를 실행 검증 중 발견 — 하네스도 코드이므로 실행 검증 대상
 2026-07-08 | settings.json permission deny에 `Read(./.env.*)` 추가 | hook은 처음부터 .env.* 차단이었는데 permission 레이어만 .env 단일 파일만 막던 이중방어 불일치 발견·보완
+2026-07-08 | npm workspaces 모노레포(backend/frontend) 스캐폴드, SQLite 드라이버는 better-sqlite3(^12.11.1) | node:sqlite는 실험적, @libsql/client는 로컬 단일 파일 용도엔 배꼽(원격 DB향 기능多); better-sqlite3 11.x는 Node 26 네이티브 빌드 실패(V8 PropertyCallbackInfo API 변경)로 12.x 상향 필요했음
+2026-07-08 | PWA는 manifest.json만 포함, 서비스워커/vite-plugin-pwa는 범위 밖 | 요청 범위(설치 가능성)만 충족, 오프라인 캐싱은 핵심 기능이 전부 LLM 호출이라 의미 없음 — 새 의존성도 아낌
+2026-07-08 | backend에 @hono/node-server 추가(계획에 없던 의존성, 승인받음) | Hono 코어는 런타임 비종속이라 Node http 서버로 띄우려면 공식 어댑터 필수
+2026-07-08 | 개발 머신 Node를 Homebrew로 신규 설치(v26, Current 라인) | 이전엔 Node 자체가 없었음; 이후 네이티브 애드온(better-sqlite3 등) 추가 시 prebuilt 바이너리 유무를 먼저 확인할 것
