@@ -7,3 +7,7 @@ export function createDbClient(path: string) {
 }
 
 export type DbClient = ReturnType<typeof createDbClient>;
+
+export function createDefaultDbClient(): DbClient {
+  return createDbClient(process.env.DATABASE_PATH ?? "./data/recall.db");
+}
