@@ -1,0 +1,23 @@
+# secrets — 절대 커밋 금지
+.env
+.env.*
+!.env.example
+
+# 개인 로컬 (팀/미래의 나와 분리)
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/state/
+
+# deps / build
+node_modules/
+dist/
+coverage/
+
+# 로컬 DB
+*.db
+*.sqlite
+*.sqlite3
+
+# misc
+.DS_Store
+*.log
