@@ -25,3 +25,8 @@
 2026-07-09 | Question 유형별 필드·Feedback.issues는 단일 테이블 + JSON 직렬화로 저장(questions/answers/feedbacks 테이블은 정의만, Repository는 미구현) | 이번 규모엔 정규화보다 단순 구현이 적합, QuestionRepository 등은 필요해질 때 추가
 2026-07-09 | NoteRepository의 create/update 입구에도 NoteSchema.parse()를 한 번 더 통과시킨다 | "신뢰 경계"는 읽기/쓰기 방향이 아니라 코드 밖 데이터가 들어오는 지점 전부를 의미한다는 재정의 — 비용이 작아 지금부터 습관화(향후 모든 Repository에 동일 적용)
 2026-07-09 | DB 마이그레이션은 drizzle-kit generate로 생성한 SQL을 drizzle-orm 마이그레이터로 적용, .env는 Node 내장 --env-file-if-exists 플래그로 로드(새 의존성 없음) | dotenv 패키지 없이 Node 20.6+/26 내장 기능으로 충분, 파일 부재 시에도 죽지 않게 if-exists 사용
+2026-07-09 | Note CRUD API: createApp이 { noteService }를 주입받는 구조로 변경, 에러 응답은 { error: string } 단순 문자열, PATCH는 부분 patch를 service가 기존 값과 병합 | 라우트를 실제 DB 없이 fake NoteService로 테스트하기 위한 DI, 이번 규모엔 구조화된 에러 바디가 과함
+2026-07-09 | 프론트는 백엔드 도메인 스키마를 공유하지 않고 frontend/src/api/note.ts에 자체 zod 스키마를 중복 정의 | 워크스페이스 독립 배포 가능성 우선, 공유 패키지는 이번 기능 규모에 과함
+2026-07-09 | 프론트에 라우터를 도입하지 않고 App의 컴포넌트 상태로 목록/편집 화면을 전환 | 화면 2개뿐이라 새 의존성 불필요 — 화면이 늘어나면(P1-5 이후) 라우터(react-router 등) 재도입을 그때 다시 고려한다
+2026-07-09 | 마크다운 미리보기는 react-markdown 채택, dangerouslySetInnerHTML 미사용으로 XSS를 구조적으로 차단(테스트로 실제 검증함) | marked+dompurify 대비 의존성 1개 적고 sanitize 단계를 직접 관리할 필요 없음
+2026-07-09 | Vite dev 서버에 /notes, /health 프록시 추가로 CORS 우회(백엔드 CORS 미들웨어 미도입) | 개발 편의, 배포 시 CORS/리버스프록시 구성은 이번 범위 밖
