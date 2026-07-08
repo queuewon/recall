@@ -1,20 +1,16 @@
-export interface LlmMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
-}
-
-export interface LlmRequest {
-  messages: LlmMessage[];
-  maxTokens?: number;
-}
+import type { PromptTemplate } from "./PromptTemplate";
 
 export type LlmError =
   | { type: "network"; message: string }
   | { type: "rate_limit"; message: string }
-  | { type: "invalid_response"; message: string };
+  | { type: "invalid_response"; message: string }
+  | { type: "refusal"; message: string };
 
-export type LlmResult = { ok: true; text: string } | { ok: false; error: LlmError };
+export type LlmResult<T> = { ok: true; data: T } | { ok: false; error: LlmError };
 
 export interface LlmClient {
-  complete(request: LlmRequest): Promise<LlmResult>;
+  complete<T>(
+    template: PromptTemplate<T>,
+    variables: Record<string, string>
+  ): Promise<LlmResult<T>>;
 }

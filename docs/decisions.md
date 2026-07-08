@@ -30,3 +30,6 @@
 2026-07-09 | 프론트에 라우터를 도입하지 않고 App의 컴포넌트 상태로 목록/편집 화면을 전환 | 화면 2개뿐이라 새 의존성 불필요 — 화면이 늘어나면(P1-5 이후) 라우터(react-router 등) 재도입을 그때 다시 고려한다
 2026-07-09 | 마크다운 미리보기는 react-markdown 채택, dangerouslySetInnerHTML 미사용으로 XSS를 구조적으로 차단(테스트로 실제 검증함) | marked+dompurify 대비 의존성 1개 적고 sanitize 단계를 직접 관리할 필요 없음
 2026-07-09 | Vite dev 서버에 /notes, /health 프록시 추가로 CORS 우회(백엔드 CORS 미들웨어 미도입) | 개발 편의, 배포 시 CORS/리버스프록시 구성은 이번 범위 밖
+2026-07-09 | AnthropicLlmClient는 messages.parse()+zodOutputFormat 대신 tools+tool_choice 기반으로 구조화 출력을 받는다 | SDK의 zodOutputFormat이 zod v4 클래스 계층을 요구해 우리 v3 classic 스키마와 비호환임을 실측 확인(프로브 스크립트로 tsc 에러 재현)
+2026-07-09 | zod를 3.24.1 → 3.25.76으로 올림 | SDK peer dependency(`^3.25.0 \|\| ^4.0.0`) 충족 목적, 도메인 코드는 classic v3 문법 그대로 — vitest 전체 통과로 영향 없음 확인
+2026-07-09 | toolInputSchema(수기 JSON Schema)와 responseSchema(zod)는 이중 정의 — 드리프트 위험 있음 | 템플릿 2개뿐이라 zod-to-json-schema 같은 자동 변환 라이브러리 도입은 보류, 템플릿이 늘어나면 재검토. 대신 키 목록 일치 테스트로 드리프트를 잡는다
