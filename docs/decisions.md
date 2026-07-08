@@ -18,3 +18,7 @@
 2026-07-08 | PWA는 manifest.json만 포함, 서비스워커/vite-plugin-pwa는 범위 밖 | 요청 범위(설치 가능성)만 충족, 오프라인 캐싱은 핵심 기능이 전부 LLM 호출이라 의미 없음 — 새 의존성도 아낌
 2026-07-08 | backend에 @hono/node-server 추가(계획에 없던 의존성, 승인받음) | Hono 코어는 런타임 비종속이라 Node http 서버로 띄우려면 공식 어댑터 필수
 2026-07-08 | 개발 머신 Node를 Homebrew로 신규 설치(v26, Current 라인) | 이전엔 Node 자체가 없었음; 이후 네이티브 애드온(better-sqlite3 등) 추가 시 prebuilt 바이너리 유무를 먼저 확인할 것
+2026-07-09 | domain/ 핵심 타입(Note/Concept/Question/Answer/Feedback) 전부 branded+zod 쌍으로 정의, createdAt/updatedAt은 브랜드 안 함 | ID·Score는 불변식 있는 도메인 값이라 브랜드, 타임스탬프는 기술적 값이라 원시 Date 유지
+2026-07-09 | NoteSchema에 updatedAt >= createdAt refine 추가 | 과잉설계가 아니라 실제 도메인 불변식이라는 판단(사용자 확정)
+2026-07-09 | Feedback에 answerId 필드 추가(원 요청엔 없었음) | 참조 없이는 어떤 답변에 대한 채점인지 알 수 없어 실사용 불가
+2026-07-09 | Answer.content는 현재 min(1)로 빈 문자열 차단, "미제출" 상태는 아직 모델링 안 함 | 빈 문자열이 미제출/모름 중 무엇을 뜻할지 미확정 — 필요해지면(P1-5~P1-7) Answer에 별도 status 필드로 재결정
