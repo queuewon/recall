@@ -22,3 +22,6 @@
 2026-07-09 | NoteSchema에 updatedAt >= createdAt refine 추가 | 과잉설계가 아니라 실제 도메인 불변식이라는 판단(사용자 확정)
 2026-07-09 | Feedback에 answerId 필드 추가(원 요청엔 없었음) | 참조 없이는 어떤 답변에 대한 채점인지 알 수 없어 실사용 불가
 2026-07-09 | Answer.content는 현재 min(1)로 빈 문자열 차단, "미제출" 상태는 아직 모델링 안 함 | 빈 문자열이 미제출/모름 중 무엇을 뜻할지 미확정 — 필요해지면(P1-5~P1-7) Answer에 별도 status 필드로 재결정
+2026-07-09 | Question 유형별 필드·Feedback.issues는 단일 테이블 + JSON 직렬화로 저장(questions/answers/feedbacks 테이블은 정의만, Repository는 미구현) | 이번 규모엔 정규화보다 단순 구현이 적합, QuestionRepository 등은 필요해질 때 추가
+2026-07-09 | NoteRepository의 create/update 입구에도 NoteSchema.parse()를 한 번 더 통과시킨다 | "신뢰 경계"는 읽기/쓰기 방향이 아니라 코드 밖 데이터가 들어오는 지점 전부를 의미한다는 재정의 — 비용이 작아 지금부터 습관화(향후 모든 Repository에 동일 적용)
+2026-07-09 | DB 마이그레이션은 drizzle-kit generate로 생성한 SQL을 drizzle-orm 마이그레이터로 적용, .env는 Node 내장 --env-file-if-exists 플래그로 로드(새 의존성 없음) | dotenv 패키지 없이 Node 20.6+/26 내장 기능으로 충분, 파일 부재 시에도 죽지 않게 if-exists 사용
