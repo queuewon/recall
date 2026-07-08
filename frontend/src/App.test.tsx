@@ -1,11 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { App } from "./App";
 
+vi.mock("./api/notesApi", () => ({
+  listNotes: vi.fn().mockResolvedValue([]),
+  createNote: vi.fn(),
+  updateNote: vi.fn(),
+  deleteNote: vi.fn()
+}));
+
 describe("App", () => {
-  it("renders without crashing", () => {
+  it("renders the note list view by default", async () => {
     render(<App />);
 
-    expect(screen.getByText("recall-lab")).toBeInTheDocument();
+    expect(await screen.findByText("새 메모")).toBeInTheDocument();
   });
 });
