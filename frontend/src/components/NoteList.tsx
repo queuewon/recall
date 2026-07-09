@@ -5,9 +5,10 @@ import { listNotes } from "../api/notesApi";
 interface NoteListProps {
   onSelectNote: (id: string) => void;
   onCreateNote: () => void;
+  onPracticeNote: (id: string) => void;
 }
 
-export function NoteList({ onSelectNote, onCreateNote }: NoteListProps) {
+export function NoteList({ onSelectNote, onCreateNote, onPracticeNote }: NoteListProps) {
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ export function NoteList({ onSelectNote, onCreateNote }: NoteListProps) {
         {notes.map((note) => (
           <li key={note.id}>
             <button onClick={() => onSelectNote(note.id)}>{note.title}</button>
+            <button onClick={() => onPracticeNote(note.id)}>문제 풀기</button>
           </li>
         ))}
       </ul>

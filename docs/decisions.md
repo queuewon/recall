@@ -33,3 +33,9 @@
 2026-07-09 | AnthropicLlmClient는 messages.parse()+zodOutputFormat 대신 tools+tool_choice 기반으로 구조화 출력을 받는다 | SDK의 zodOutputFormat이 zod v4 클래스 계층을 요구해 우리 v3 classic 스키마와 비호환임을 실측 확인(프로브 스크립트로 tsc 에러 재현)
 2026-07-09 | zod를 3.24.1 → 3.25.76으로 올림 | SDK peer dependency(`^3.25.0 \|\| ^4.0.0`) 충족 목적, 도메인 코드는 classic v3 문법 그대로 — vitest 전체 통과로 영향 없음 확인
 2026-07-09 | toolInputSchema(수기 JSON Schema)와 responseSchema(zod)는 이중 정의 — 드리프트 위험 있음 | 템플릿 2개뿐이라 zod-to-json-schema 같은 자동 변환 라이브러리 도입은 보류, 템플릿이 늘어나면 재검토. 대신 키 목록 일치 테스트로 드리프트를 잡는다
+2026-07-09 | 기능1(개념 암기 문제): ShortAnswerQuestionSchema에 optional conceptId 추가 | 단답형 채점 시 "어느 개념을 기준으로 삼을지" 필요 — questions.concept_id 컬럼이 이미 있어 마이그레이션 불필요
+2026-07-09 | 기능1: grade-answer-demo(플레이스홀더)를 grade-short-answer(실제 기능)로 교체(삭제+신규) | 데모는 LlmClient 구조 검증용이었고 이번에 실제 GradingPolicy가 그 자리를 대체
+2026-07-09 | 기능1: QuestionPolicy/GradingPolicy는 구현이 각각 1개뿐이어도 인터페이스 뒤로 유지한다 | CLAUDE.md가 "출제·채점 규칙은 policy/에 인터페이스로 분리"를 프로젝트 원칙으로 명시함 — "단일 구현이면 인터페이스 강등" 일반 가이드의 명시적 예외로 판단
+2026-07-09 | 기능1: MultipleChoice 채점에서 "숫자가 아니거나 범위 밖인 답변"은 오답(score 0)이 아니라 malformed_answer라는 별도 에러로 구분 | 형식이 잘못된 답과 정상 제출했지만 틀린 답은 다른 실패 상태 — 하나로 뭉치면 클라이언트가 원인을 구분할 수 없음
+2026-07-09 | 기능1: 개념 추출 결과에 상한을 두지 않되 20개 초과 시 console.warn으로 관찰 | 상한을 지금 확정하기엔 이르지만, 폭주 신호는 지금부터 눈에 띄게 남겨둔다
+2026-07-09 | 기능1: FakeLlmClient가 고정 응답 외에 템플릿별 분기 함수(`(template) => LlmResult`)도 받을 수 있도록 확장 | questionGenerationService가 한 요청 안에서 서로 다른 응답 스키마(개념 추출→문제 생성)를 여러 번 호출해야 해서 고정 응답 하나로는 테스트 불가능해짐. 기존 고정값 생성자는 하위 호환 유지

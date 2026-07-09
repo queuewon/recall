@@ -1,6 +1,7 @@
-import { Hono, type Context } from "hono";
+import { Hono } from "hono";
 import { z } from "zod";
 import { parseNoteId } from "../domain";
+import { readJsonBody } from "./httpUtils";
 import type { NoteService } from "../service/noteService";
 
 const CreateNoteBody = z.object({
@@ -21,14 +22,6 @@ function formatZodError(error: z.ZodError): string {
   return error.issues
     .map((issue) => `${issue.path.join(".") || "(body)"}: ${issue.message}`)
     .join(", ");
-}
-
-async function readJsonBody(c: Context): Promise<unknown> {
-  try {
-    return await c.req.json();
-  } catch {
-    return undefined;
-  }
 }
 
 export function createNotesRouter(noteService: NoteService) {

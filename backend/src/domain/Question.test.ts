@@ -67,4 +67,27 @@ describe("QuestionSchema", () => {
 
     expect(QuestionSchema.parse(question).type).toBe("ActiveRecall");
   });
+
+  it("parses a ShortAnswer question with an optional conceptId", () => {
+    const question = {
+      type: "ShortAnswer" as const,
+      id: questionId,
+      noteId,
+      prompt: "질문",
+      conceptId
+    };
+
+    expect(QuestionSchema.parse(question)).toEqual(question);
+  });
+
+  it("parses a ShortAnswer question without a conceptId", () => {
+    const question = {
+      type: "ShortAnswer" as const,
+      id: questionId,
+      noteId,
+      prompt: "질문"
+    };
+
+    expect(QuestionSchema.parse(question)).toEqual(question);
+  });
 });
