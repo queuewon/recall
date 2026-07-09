@@ -20,7 +20,8 @@ export const QuestionSchema = z.discriminatedUnion("type", [
     type: z.literal("Essay"),
     id: z.string().uuid(),
     noteId: z.string().uuid(),
-    prompt: z.string()
+    prompt: z.string(),
+    conceptId: z.string().uuid().optional()
   }),
   z.object({
     type: z.literal("ActiveRecall"),

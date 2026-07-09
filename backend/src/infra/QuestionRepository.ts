@@ -25,7 +25,7 @@ function toRow(question: Question): typeof questions.$inferInsert {
     case "ActiveRecall":
       return { ...base, options: null, correctIndex: null, conceptId: question.conceptId };
     case "Essay":
-      return { ...base, options: null, correctIndex: null, conceptId: null };
+      return { ...base, options: null, correctIndex: null, conceptId: question.conceptId ?? null };
   }
 }
 
@@ -50,7 +50,11 @@ function fromRow(row: QuestionRow): Question {
         ...(row.conceptId !== null ? { conceptId: row.conceptId } : {})
       });
     case "Essay":
-      return QuestionSchema.parse({ ...base, type: "Essay" });
+      return QuestionSchema.parse({
+        ...base,
+        type: "Essay",
+        ...(row.conceptId !== null ? { conceptId: row.conceptId } : {})
+      });
     case "ActiveRecall": {
       if (row.conceptId === null) {
         throw new Error("corrupted ActiveRecall row: missing conceptId");

@@ -39,3 +39,6 @@
 2026-07-09 | 기능1: MultipleChoice 채점에서 "숫자가 아니거나 범위 밖인 답변"은 오답(score 0)이 아니라 malformed_answer라는 별도 에러로 구분 | 형식이 잘못된 답과 정상 제출했지만 틀린 답은 다른 실패 상태 — 하나로 뭉치면 클라이언트가 원인을 구분할 수 없음
 2026-07-09 | 기능1: 개념 추출 결과에 상한을 두지 않되 20개 초과 시 console.warn으로 관찰 | 상한을 지금 확정하기엔 이르지만, 폭주 신호는 지금부터 눈에 띄게 남겨둔다
 2026-07-09 | 기능1: FakeLlmClient가 고정 응답 외에 템플릿별 분기 함수(`(template) => LlmResult`)도 받을 수 있도록 확장 | questionGenerationService가 한 요청 안에서 서로 다른 응답 스키마(개념 추출→문제 생성)를 여러 번 호출해야 해서 고정 응답 하나로는 테스트 불가능해짐. 기존 고정값 생성자는 하위 호환 유지
+2026-07-09 | 기능2(개념 서술 문제): EssayQuestionSchema에 optional conceptId 추가 | ShortAnswer와 동일한 이유 — 서술형 채점 시 "어느 개념을 기준으로 삼을지" 필요, questions.concept_id 컬럼 재사용
+2026-07-09 | 기능2: generate-essay/grade-essay 템플릿이 generate-short-answer/grade-short-answer의 응답 zod 스키마를 그대로 import해 재사용(재정의 안 함) | 결합 사실 — ShortAnswer와 Essay는 생성·채점 응답 모양이 완전히 같아 스키마를 공유한다. 둘 중 하나만 응답 형식(필드 추가 등)을 바꾸려면 먼저 이 결합을 풀고 스키마를 분리해야 한다. 그전까지는 한쪽 스키마 변경이 곧 다른 쪽에도 영향을 미침을 인지하고 작업할 것
+2026-07-09 | 기능2: QuestionPolicy 기존 테스트("alternates ... MultipleChoice/ShortAnswer")를 3-way 회전 검증으로 갱신 | 삭제가 아니라 유형이 2종→3종(Essay 추가)으로 늘어난 스펙 변경에 따른 정당한 갱신 — 커밋 메시지에도 동일하게 명시

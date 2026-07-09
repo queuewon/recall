@@ -1,3 +1,4 @@
+import { gradeEssayTemplate } from "../infra/llm/gradeEssay.template";
 import { gradeShortAnswerTemplate } from "../infra/llm/gradeShortAnswer.template";
 import type { LlmClient, LlmError } from "../infra/llm/LlmClient";
 import {
@@ -46,13 +47,16 @@ export function gradeMultipleChoiceDeterministically(
   };
 }
 
-async function gradeShortAnswerWithLlm(
+// ShortAnswer/Essay 채점은 서로 다른 프롬프트를 쓸 뿐, 흐름과 응답 스키마
+// ({score, issues, comment})가 완전히 같아 template만 매개변수화한다.
+async function gradeWithLlm(
   llm: LlmClient,
+  template: typeof gradeShortAnswerTemplate,
   question: Question,
   answer: Answer,
   concept: Concept
 ): Promise<GradingResult> {
-  const result = await llm.complete(gradeShortAnswerTemplate, {
+  const result = await llm.complete(template, {
     conceptTerm: concept.term,
     conceptExplanation: concept.explanation,
     question: question.prompt,
@@ -84,14 +88,19 @@ export function createDefaultGradingPolicy(llm: LlmClient): GradingPolicy {
       if (question.type === "MultipleChoice") {
         return gradeMultipleChoiceDeterministically(question, answer);
       }
-      if (question.type === "ShortAnswer") {
+      if (question.type === "ShortAnswer" || question.type === "Essay") {
         if (!concept) {
           return {
             ok: false,
-            error: { type: "missing_concept", message: "ShortAnswer grading requires a concept" }
+            error: {
+              type: "missing_concept",
+              message: `${question.type} grading requires a concept`
+            }
           };
         }
-        return gradeShortAnswerWithLlm(llm, question, answer, concept);
+        const template =
+          question.type === "ShortAnswer" ? gradeShortAnswerTemplate : gradeEssayTemplate;
+        return gradeWithLlm(llm, template, question, answer, concept);
       }
       return {
         ok: false,

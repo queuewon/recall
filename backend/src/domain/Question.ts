@@ -19,7 +19,8 @@ export const ShortAnswerQuestionSchema = QuestionBaseSchema.extend({
 });
 
 export const EssayQuestionSchema = QuestionBaseSchema.extend({
-  type: z.literal("Essay")
+  type: z.literal("Essay"),
+  conceptId: ConceptIdSchema.optional()
 });
 
 export const ActiveRecallQuestionSchema = QuestionBaseSchema.extend({

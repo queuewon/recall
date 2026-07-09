@@ -7,8 +7,9 @@ import type { GradingError, GradingPolicy } from "../policy/GradingPolicy";
 import {
   parseAnswerId,
   type Answer,
-  type Concept,
+  type ConceptId,
   type Feedback,
+  type Question,
   type QuestionId
 } from "../domain";
 
@@ -16,6 +17,19 @@ export type SubmitAnswerError = { type: "question_not_found" } | GradingError;
 
 export type SubmitAnswerResult =
   { ok: true; answer: Answer; feedback: Feedback } | { ok: false; error: SubmitAnswerError };
+
+// ShortAnswer/Essay/ActiveRecall은 모두 채점 기준이 되는 개념을 conceptId로 갖는다.
+// MultipleChoice만 개념 조회가 필요 없다.
+function getConceptId(question: Question): ConceptId | undefined {
+  switch (question.type) {
+    case "ShortAnswer":
+    case "Essay":
+    case "ActiveRecall":
+      return question.conceptId;
+    case "MultipleChoice":
+      return undefined;
+  }
+}
 
 export function createAnswerService(deps: {
   questionRepo: QuestionRepository;
@@ -40,12 +54,8 @@ export function createAnswerService(deps: {
         submittedAt: new Date()
       };
 
-      let concept: Concept | null = null;
-      if (question.type === "ShortAnswer" && question.conceptId) {
-        concept = await conceptRepo.findById(question.conceptId);
-      } else if (question.type === "ActiveRecall") {
-        concept = await conceptRepo.findById(question.conceptId);
-      }
+      const conceptId = getConceptId(question);
+      const concept = conceptId ? await conceptRepo.findById(conceptId) : null;
 
       const gradeResult = await gradingPolicy.grade(question, answer, concept);
       if (!gradeResult.ok) {

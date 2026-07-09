@@ -90,4 +90,27 @@ describe("QuestionSchema", () => {
 
     expect(QuestionSchema.parse(question)).toEqual(question);
   });
+
+  it("parses an Essay question with an optional conceptId", () => {
+    const question = {
+      type: "Essay" as const,
+      id: questionId,
+      noteId,
+      prompt: "불황형 흑자를 설명하시오",
+      conceptId
+    };
+
+    expect(QuestionSchema.parse(question)).toEqual(question);
+  });
+
+  it("parses an Essay question without a conceptId", () => {
+    const question = {
+      type: "Essay" as const,
+      id: questionId,
+      noteId,
+      prompt: "불황형 흑자를 설명하시오"
+    };
+
+    expect(QuestionSchema.parse(question)).toEqual(question);
+  });
 });
