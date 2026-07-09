@@ -38,5 +38,11 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "error"
     }
   },
+  {
+    files: ["frontend/public/sw.js"],
+    languageOptions: {
+      globals: globals.serviceworker
+    }
+  },
   prettierConfig
 );

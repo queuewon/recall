@@ -36,4 +36,12 @@ describe("createApp", () => {
 
     expect(res.status).toBe(404);
   });
+
+  it("responds with an Access-Control-Allow-Origin header for cross-origin requests", async () => {
+    const res = await makeApp().request("/health", {
+      headers: { Origin: "http://192.168.1.5:5173" }
+    });
+
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
+  });
 });
