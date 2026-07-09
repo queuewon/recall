@@ -1,0 +1,97 @@
+.page {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.speaker {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 4px;
+}
+
+.bubbleAi {
+  max-width: 88%;
+  background: var(--accent-bg);
+  color: var(--accent-dark);
+  border-radius: 12px;
+  border-bottom-left-radius: 3px;
+  padding: 12px 14px;
+  align-self: flex-start;
+}
+
+.bubbleUser {
+  max-width: 88%;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 12px;
+  border-bottom-right-radius: 3px;
+  padding: 12px 14px;
+  align-self: flex-end;
+}
+
+.bubbleUser .speaker {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.bubbleText {
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.scoreLine {
+  font-family: var(--mono);
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+
+.issueList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(30, 42, 51, 0.12);
+}
+
+.issueTag {
+  font-size: 10px;
+  font-family: var(--mono);
+  background: var(--brick-bg);
+  color: var(--brick);
+  padding: 3px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.inputBar {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.input {
+  flex: 1;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 44px;
+}

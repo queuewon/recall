@@ -1,0 +1,72 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/*
+ * .btn-primary / .btn-secondary는 전역(스코프 없는) 유틸 클래스다.
+ * 각 컴포넌트의 *.module.css(CSS Modules, 클래스명 자동 스코프)와
+ * className={`${styles.foo} btn-primary`}처럼 섞어 쓴다 — 이 두 이름은
+ * 여기 global.css에서만 정의하고 module.css에서 재정의하지 않는다.
+ */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+  transition: background-color 120ms ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-dark);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--ink-faint);
+  background: var(--bg);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

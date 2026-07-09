@@ -1,0 +1,156 @@
+.card {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.indexCard {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px 10px 10px 10px;
+  padding: 24px 20px 20px;
+  margin-top: 14px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 25px,
+    var(--rule) 26px
+  );
+}
+
+.indexTab {
+  position: absolute;
+  top: -11px;
+  left: -1px;
+  background: var(--brass);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 4px 4px 0 0;
+}
+
+.qText {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+  margin: 6px 0 16px;
+  color: var(--ink);
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.optionRow.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  color: var(--accent-dark);
+  font-weight: 500;
+}
+
+.optionRow input {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  min-height: 140px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.submitBtn {
+  margin-top: 14px;
+}
+
+.promptReview {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 14px 0 12px;
+  color: var(--ink);
+}
+
+.answerBox {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+}
+
+.feedbackPanel {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.scoreValue {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--accent-dark);
+}
+
+.scoreLabel {
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+.issueList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--rule);
+}
+
+.issueTag {
+  font-size: 10px;
+  font-family: var(--mono);
+  background: var(--brick-bg);
+  color: var(--brick);
+  padding: 3px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.comment {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.6;
+}

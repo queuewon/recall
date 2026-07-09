@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>recall — UI/UX 디자인 설계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F5F1;
+    --surface: #FFFFFF;
+    --border: #E4E1D8;
+    --border-strong: #D2CDBD;
+    --ink: #1E2A33;
+    --ink-soft: #5B6670;
+    --ink-faint: #8B9298;
+    --accent: #2F5D57;
+    --accent-dark: #1F433F;
+    --accent-bg: #E4EDEA;
+    --brass: #B98B2E;
+    --brass-bg: #F7ECD6;
+    --moss: #4B7A4E;
+    --moss-bg: #E9F1E5;
+    --brick: #B15039;
+    --brick-bg: #FBEAE5;
+    --rule: #E1DDD0;
+    --radius: 10px;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--ink);
+    padding: 48px 24px 96px;
+  }
+  .page { max-width: 1180px; margin: 0 auto; }
+
+  /* ---- doc header ---- */
+  .doc-header { margin-bottom: 56px; }
+  .doc-eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
+    color: var(--accent); text-transform: uppercase; margin: 0 0 10px;
+  }
+  .doc-title {
+    font-family: var(--serif); font-weight: 600; font-size: 34px;
+    margin: 0 0 8px; color: var(--ink);
+  }
+  .doc-sub { font-size: 15px; color: var(--ink-soft); max-width: 620px; line-height: 1.6; margin: 0; }
+
+  /* ---- token strip ---- */
+  .tokens {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 32px; margin: 32px 0 64px;
+  }
+  .tokens h2 {
+    font-family: var(--mono); font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-faint); margin: 0 0 18px;
+  }
+  .swatch-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 28px; }
+  .swatch { width: 96px; }
+  .swatch-color { height: 56px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 6px; }
+  .swatch-name { font-size: 11px; font-weight: 500; color: var(--ink); }
+  .swatch-hex { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+  .type-specimen { display: flex; gap: 40px; flex-wrap: wrap; align-items: baseline; padding-top: 20px; border-top: 1px solid var(--rule); }
+  .spec-display { font-family: var(--serif); font-size: 26px; font-weight: 600; }
+  .spec-body { font-family: var(--sans); font-size: 16px; color: var(--ink-soft); }
+  .spec-mono { font-family: var(--mono); font-size: 16px; color: var(--accent-dark); }
+  .spec-label { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 4px; }
+
+  /* ---- screens grid ---- */
+  .screens-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+  }
+  .screen-block { display: flex; flex-direction: column; align-items: center; }
+  .screen-label {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-soft);
+    margin-bottom: 14px; text-align: center;
+  }
+  .screen-label b { color: var(--ink); font-weight: 500; }
+
+  .device {
+    width: 340px; background: var(--surface); border-radius: 28px;
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 20px 40px -20px rgba(30,42,51,0.18);
+    overflow: hidden; height: 660px; display: flex; flex-direction: column;
+  }
+  .status-bar {
+    height: 30px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; font-family: var(--mono); font-size: 10px; color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .screen-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* ---- shared UI bits ---- */
+  .topbar {
+    padding: 10px 18px 14px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--rule); flex-shrink: 0;
+  }
+  .topbar-title { font-family: var(--serif); font-weight: 600; font-size: 16px; }
+  .icon-btn {
+    width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; color: var(--ink-soft); font-size: 15px; border: 1px solid transparent;
+  }
+  .brand-mark { display: flex; align-items: center; gap: 8px; }
+  .brand-dot { width: 9px; height: 9px; border-radius: 3px; background: var(--accent); }
+  .brand-word { font-family: var(--serif); font-weight: 600; font-size: 17px; }
+
+  .content { padding: 16px 18px 20px; overflow-y: auto; flex: 1; }
+
+  .metric-row { display: flex; gap: 8px; margin-bottom: 20px; }
+  .metric-card { flex: 1; background: var(--accent-bg); border-radius: 8px; padding: 10px 10px 12px; }
+  .metric-label { font-size: 10px; color: var(--accent-dark); opacity: 0.8; margin-bottom: 4px; }
+  .metric-value { font-family: var(--mono); font-size: 19px; font-weight: 500; color: var(--accent-dark); }
+
+  .section-title {
+    font-size: 11px; font-weight: 500; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.04em; margin: 4px 0 10px;
+  }
+
+  .note-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--rule);
+  }
+  .note-row:last-child { border-bottom: none; }
+  .note-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+  .note-meta { font-size: 11px; color: var(--ink-faint); }
+  .chip {
+    font-size: 10px; font-family: var(--mono); background: var(--brass-bg);
+    color: var(--brass); padding: 3px 8px; border-radius: 5px; white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 12px; font-family: var(--sans); font-size: 14px; font-weight: 500;
+    width: 100%; text-align: center; margin-top: 6px;
+  }
+  .btn-secondary {
+    background: transparent; color: var(--ink); border: 1px solid var(--border-strong);
+    border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 500; width: 100%; text-align: center;
+  }
+
+  .tab-bar {
+    display: flex; border-top: 1px solid var(--rule); padding: 10px 18px 14px; flex-shrink: 0; background: var(--surface);
+  }
+  .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .tab-icon { width: 18px; height: 18px; border-radius: 5px; background: var(--rule); }
+  .tab-icon.active { background: var(--accent); }
+  .tab-label { font-size: 9px; color: var(--ink-faint); }
+  .tab-label.active { color: var(--accent); font-weight: 500; }
+
+  /* note editor */
+  .editor-area {
+    flex: 1; padding: 14px 18px; background-image: repeating-linear-gradient(
+      to bottom, transparent, transparent 27px, var(--rule) 28px
+    );
+    font-family: var(--sans); font-size: 13.5px; line-height: 28px; color: var(--ink);
+  }
+  .editor-hint {
+    padding: 10px 18px; font-size: 11.5px; color: var(--ink-faint); border-top: 1px solid var(--rule);
+  }
+  .save-state { font-size: 10px; color: var(--moss); font-family: var(--mono); }
+
+  /* index card (question) */
+  .index-card {
+    position: relative; background: var(--surface); border: 1px solid var(--border-strong);
+    border-radius: 4px 10px 10px 10px; margin: 18px 16px 0; padding: 20px 18px 18px;
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 25px, var(--rule) 26px);
+  }
+  .index-tab {
+    position: absolute; top: -11px; left: -1px; background: var(--brass);
+    color: #fff; font-family: var(--mono); font-size: 10px; padding: 4px 10px;
+    border-radius: 4px 4px 0 0;
+  }
+  .q-progress { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-bottom: 10px; text-align: right; }
+  .q-text { font-size: 15px; font-weight: 500; line-height: 1.55; margin-bottom: 16px; }
+  .option-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 13px;
+  }
+  .option-row.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent-dark); font-weight: 500; }
+  .radio-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; }
+  .option-row.selected .radio-dot { border-color: var(--accent); background: var(--accent); }
+
+  /* essay + feedback */
+  .answer-box {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin-bottom: 16px;
+  }
+  .feedback-panel { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; padding: 16px; }
+  .score-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+  .score-value { font-family: var(--mono); font-size: 28px; font-weight: 500; color: var(--accent-dark); }
+  .score-label { font-size: 11px; color: var(--ink-faint); }
+  .issue-item { display: flex; gap: 8px; padding: 8px 0; border-top: 1px solid var(--rule); }
+  .issue-tag {
+    font-size: 10px; font-family: var(--mono); background: var(--brick-bg); color: var(--brick);
+    padding: 3px 7px; border-radius: 5px; height: fit-content; white-space: nowrap;
+  }
+  .issue-text { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* interview / debate chat */
+  .chat-thread { flex: 1; padding: 16px 16px 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .bubble { max-width: 82%; padding: 10px 13px; border-radius: 12px; font-size: 13px; line-height: 1.55; }
+  .bubble.ai { background: var(--accent-bg); color: var(--accent-dark); align-self: flex-start; border-bottom-left-radius: 3px; }
+  .bubble.user { background: var(--ink); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+  .reason-list { margin: 6px 0 0; padding: 0; list-style: none; }
+  .reason-list li { font-family: var(--mono); font-size: 11px; opacity: 0.85; margin-top: 3px; }
+  .chat-input-bar {
+    display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--rule); flex-shrink: 0;
+  }
+  .chat-input {
+    flex: 1; border: 1px solid var(--border-strong); border-radius: 18px; padding: 9px 14px; font-size: 12.5px; color: var(--ink-faint);
+  }
+  .send-btn {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .debate-header {
+    padding: 12px 18px; background: var(--brass-bg); display: flex; align-items: center; justify-content: space-between;
+  }
+  .debate-topic { font-size: 12px; font-weight: 500; color: #6B4E17; line-height: 1.4; max-width: 200px; }
+  .debate-timer { font-family: var(--mono); font-size: 11px; color: #6B4E17; text-align: right; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <p class="doc-eyebrow">recall · UI/UX design proposal</p>
+    <h1 class="doc-title">학습 인덱스 카드 — recall 디자인 설계</h1>
+    <p class="doc-sub">
+      자기주도 학습자가 혼자, 매일 앉아서 쓰는 도구라는 전제로 설계했다.
+      화려한 랜딩페이지가 아니라 오래된 경제 저널·장부의 신뢰감에서 정체성을 가져왔고,
+      문제 카드는 "내 노트에서 다시 꺼내 보는 인덱스 카드"라는 능동 회상의 은유로 통일했다.
+    </p>
+  </div>
+
+  <div class="tokens">
+    <h2>Design tokens</h2>
+    <div class="swatch-row">
+      <div class="swatch"><div class="swatch-color" style="background:#F6F5F1"></div><div class="swatch-name">Paper</div><div class="swatch-hex">#F6F5F1</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#1E2A33"></div><div class="swatch-name">Ink</div><div class="swatch-hex">#1E2A33</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#2F5D57"></div><div class="swatch-name">Ledger teal</div><div class="swatch-hex">#2F5D57</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#B98B2E"></div><div class="swatch-name">Brass</div><div class="swatch-hex">#B98B2E</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#4B7A4E"></div><div class="swatch-name">Moss</div><div class="swatch-hex">#4B7A4E</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#B15039"></div><div class="swatch-name">Brick flag</div><div class="swatch-hex">#B15039</div></div>
+    </div>
+    <div class="type-specimen">
+      <div><span class="spec-display">경상수지란 무엇인가</span><span class="spec-label">Source Serif 4 · 제목</span></div>
+      <div><span class="spec-body">노트에서 개념을 추출하고 있어요</span><span class="spec-label">IBM Plex Sans · 본문</span></div>
+      <div><span class="spec-mono">72점 · 04:12 · 3/8</span><span class="spec-label">IBM Plex Mono · 데이터</span></div>
+    </div>
+  </div>
+
+  <div class="screens-grid">
+
+    <!-- 1. 홈 -->
+    <div class="screen-block">
+      <div class="screen-label"><b>01</b> · 홈 대시보드</div>
+      <div class="device">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body">
+          <div class="topbar">
+            <div class="brand-mark"><div class="brand-dot"></div><div class="brand-word">recall</div></div>
+            <div class="icon-btn">⚙</div>
+          </div>
+          <div class="content">
+            <div class="section-title">이번 주</div>
+            <div class="metric-row">
+              <div class="metric-card"><div class="metric-label">학습 세션</div><div class="metric-value">3회</div></div>
+              <div class="metric-card"><div class="metric-label">정답률</div><div class="metric-value">72%</div></div>
+              <div class="metric-card"><div class="metric-label">복습 대기</div><div class="metric-value">5개</div></div>
+            </div>
+            <div class="section-title">최근 노트</div>
+            <div class="note-row">
+              <div><div class="note-title">국제수지와 경상수지</div><div class="note-meta">2일 전 수정</div></div>
+              <div class="chip">개념 6</div>
+            </div>
+            <div class="note-row">
+              <div><div class="note-title">환율과 수출입 관계</div><div class="note-meta">5일 전 수정</div></div>
+              <div class="chip">개념 4</div>
+            </div>
+            <div class="note-row">
+              <div><div class="note-title">불황형 흑자 정리</div><div class="note-meta">1주 전 수정</div></div>
+              <div class="chip">개념 3</div>
+            </div>
+            <button class="btn-primary" style="margin-top:14px;">새 노트 작성</button>
+          </div>
+          <div class="tab-bar">
+            <div class="tab-item"><div class="tab-icon active"></div><div class="tab-label active">홈</div></div>
+            <div class="tab-item"><div class="tab-icon"></div><div class="tab-label">노트</div></div>
+            <div class="tab-item"><div class="tab-icon"></div><div class="tab-label">학습</div></div>
+            <div class="tab-item"><div class="tab-icon"></div><div class="tab-label">토론</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 노트 편집 -->
+    <div class="screen-block">
+      <div class="screen-label"><b>02</b> · 노트 편집 (마크다운)</div>
+      <div class="device">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body">
+          <div class="topbar">
+            <div class="icon-btn">←</div>
+            <span class="save-state">자동 저장됨</span>
+            <div class="icon-btn">⋯</div>
+          </div>
+          <div class="editor-area">
+# 국제수지와 경상수지
+
+경상수지는 상품·서비스 거래로 발생하는
+외화의 유입과 유출 차이를 말한다.
+
+- 상품수지: 재화 수출입
+- 서비스수지: 관광, 운송 등
+- 본원소득수지: 임금, 투자소득
+
+**불황형 흑자**란 수출보다 수입이
+더 크게 줄어들어 발생하는 흑자.
+          </div>
+          <div class="editor-hint">정리한 내용을 바탕으로 문제가 만들어져요.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 객관식 문제 -->
+    <div class="screen-block">
+      <div class="screen-label"><b>03</b> · 개념 확인 문제</div>
+      <div class="device">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body">
+          <div class="topbar">
+            <div class="icon-btn">←</div>
+            <span class="topbar-title">개념 확인</span>
+            <div class="icon-btn">✕</div>
+          </div>
+          <div class="content" style="padding-top:0;">
+            <div class="index-card">
+              <div class="index-tab">개념 카드</div>
+              <div class="q-progress">3 / 8</div>
+              <div class="q-text">다음 중 경상수지 흑자를 구성하는 항목으로 옳은 것은?</div>
+              <div class="option-row"><div class="radio-dot"></div>자본수지 증가</div>
+              <div class="option-row selected"><div class="radio-dot"></div>상품수지 흑자 확대</div>
+              <div class="option-row"><div class="radio-dot"></div>외국인 직접투자 유출</div>
+              <div class="option-row"><div class="radio-dot"></div>준비자산 감소</div>
+            </div>
+            <button class="btn-primary">제출</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 서술형 + 피드백 -->
+    <div class="screen-block">
+      <div class="screen-label"><b>04</b> · 서술형 답안 · 피드백</div>
+      <div class="device">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body">
+          <div class="topbar">
+            <div class="icon-btn">←</div>
+            <span class="topbar-title">서술형 채점 결과</span>
+            <div class="icon-btn">⋯</div>
+          </div>
+          <div class="content">
+            <div class="section-title">문제</div>
+            <p style="font-size:13.5px; font-weight:500; line-height:1.5; margin:0 0 12px;">
+              불황형 흑자를 설명하시오.
+            </p>
+            <div class="section-title">내 답안</div>
+            <div class="answer-box">
+              수출이 늘어서 생기는 흑자가 불황형 흑자다.
+            </div>
+            <div class="feedback-panel">
+              <div class="score-row">
+                <span class="score-value">58</span>
+                <span class="score-label">/ 100</span>
+              </div>
+              <div class="issue-item">
+                <span class="issue-tag">개념 혼동</span>
+                <span class="issue-text">수출 증가가 아니라 수입이 더 크게 줄어드는 상황을 짚어야 해요.</span>
+              </div>
+              <div class="issue-item">
+                <span class="issue-tag">반례 부족</span>
+                <span class="issue-text">경기 침체기 사례를 하나 들면 설명이 더 탄탄해져요.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 능동회상 인터뷰 -->
+    <div class="screen-block">
+      <div class="screen-label"><b>05</b> · 능동회상 · 인터뷰형 문답</div>
+      <div class="device">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body">
+          <div class="topbar">
+            <div class="icon-btn">←</div>
+            <span class="topbar-title">능동 회상</span>
+            <div class="icon-btn">⋯</div>
+          </div>
+          <div class="chat-thread">
+            <div class="bubble ai">
+              원화 약세가 항상 수출 호재가 아닌 이유를 3가지 말해볼까요?
+            </div>
+            <div class="bubble user">
+              원자재 수입 단가가 오르고, 수출기업도 해외 부품을 쓰면 원가가 올라요.
+              <ul class="reason-list"><li>이유 1</li></ul>
+            </div>
+            <div class="bubble ai">
+              좋아요, 하나 더 있어요. 계약 통화나 J커브 효과처럼
+              시차가 관련된 이유는 없을까요?
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <div class="chat-input">답변을 입력하세요…</div>
+            <div class="send-btn">↑</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 토론 -->
+    <div class="screen-block">
+      <div class="screen-label"><b>06</b> · 토론</div>
+      <div class="device">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body">
+          <div class="debate-header">
+            <div class="debate-topic">원화 약세는 항상 수출에 유리한가</div>
+            <div class="debate-timer">3 / 6턴<br>04:12</div>
+          </div>
+          <div class="chat-thread">
+            <div class="bubble ai">
+              단기적으로는 그렇게 보일 수 있지만, 수입 원자재 비중이 높은
+              산업은 오히려 원가 부담이 커지지 않을까요?
+            </div>
+            <div class="bubble user">
+              그래도 가격 경쟁력 자체는 올라가니 전체적으론 유리하다고 봐요.
+            </div>
+            <div class="bubble ai">
+              그 경쟁력이 J커브 효과처럼 시차를 두고 나타난다면,
+              단기 지표만으로 유리하다고 단정할 수 있을까요?
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <div class="chat-input">반박을 입력하세요…</div>
+            <div class="send-btn">↑</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
