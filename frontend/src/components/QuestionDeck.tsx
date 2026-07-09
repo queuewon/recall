@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Question } from "../api/question";
 import { generateQuestions, listQuestions } from "../api/questionsApi";
+import { ActiveRecallCard } from "./ActiveRecallCard";
 import { QuestionCard } from "./QuestionCard";
 
 interface QuestionDeckProps {
@@ -46,7 +47,11 @@ export function QuestionDeck({ noteId, onExit }: QuestionDeckProps) {
       <p>
         {index + 1} / {questions.length}
       </p>
-      <QuestionCard key={current.id} question={current} />
+      {current.type === "ActiveRecall" ? (
+        <ActiveRecallCard key={current.id} question={current} />
+      ) : (
+        <QuestionCard key={current.id} question={current} />
+      )}
       <div>
         <button disabled={index === 0} onClick={() => setIndex((i) => i - 1)}>
           이전

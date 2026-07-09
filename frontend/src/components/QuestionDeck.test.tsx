@@ -61,4 +61,22 @@ describe("QuestionDeck", () => {
 
     expect(await screen.findByText("질문1")).toBeInTheDocument();
   });
+
+  it("renders ActiveRecallCard's interview-style layout for an ActiveRecall question", async () => {
+    const activeRecallQuestions: Question[] = [
+      {
+        type: "ActiveRecall",
+        id: "8b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e72",
+        noteId: "n1",
+        prompt: "연결 질문",
+        conceptIds: ["1e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e6f", "2e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e70"]
+      }
+    ];
+    vi.mocked(questionsApi.listQuestions).mockResolvedValue(activeRecallQuestions);
+
+    render(<QuestionDeck noteId="n1" onExit={() => {}} />);
+
+    expect(await screen.findByText("면접관")).toBeInTheDocument();
+    expect(screen.getByText("연결 질문")).toBeInTheDocument();
+  });
 });

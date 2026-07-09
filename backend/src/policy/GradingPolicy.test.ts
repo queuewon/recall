@@ -6,6 +6,7 @@ import {
   parseConceptId,
   parseNoteId,
   parseQuestionId,
+  type ActiveRecallQuestion,
   type Answer,
   type Concept,
   type EssayQuestion,
@@ -17,6 +18,7 @@ const noteId = parseNoteId("3fa85f64-5717-4562-b3fc-2c963f66afa6");
 const questionId = parseQuestionId("5b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e6f");
 const answerId = parseAnswerId("2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e");
 const conceptId = parseConceptId("7c2c8c3f-7f3f-4d2b-9f3c-2b3c4d5e6f7a");
+const conceptId2 = parseConceptId("8c2c8c3f-7f3f-4d2b-9f3c-2b3c4d5e6f7b");
 
 const mcQuestion: MultipleChoiceQuestion = {
   type: "MultipleChoice",
@@ -43,11 +45,26 @@ const essayQuestion: EssayQuestion = {
   conceptId
 };
 
+const activeRecallQuestion: ActiveRecallQuestion = {
+  type: "ActiveRecall",
+  id: questionId,
+  noteId,
+  prompt: "원화 약세가 항상 수출 호재가 아닌 이유 3가지",
+  conceptIds: [conceptId, conceptId2]
+};
+
 const concept: Concept = {
   id: conceptId,
   noteId,
   term: "재귀",
   explanation: "자기 자신을 호출하는 함수"
+};
+
+const concept2: Concept = {
+  id: conceptId2,
+  noteId,
+  term: "반복",
+  explanation: "조건이 참인 동안 되풀이하는 것"
 };
 
 function makeAnswer(content: string): Answer {
@@ -102,7 +119,7 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(mcQuestion, makeAnswer("2"), null);
+    const result = await policy.grade(mcQuestion, makeAnswer("2"), []);
 
     expect(result).toEqual({
       ok: true,
@@ -117,11 +134,9 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(
-      shortAnswerQuestion,
-      makeAnswer("자기 자신을 부르는 것"),
+    const result = await policy.grade(shortAnswerQuestion, makeAnswer("자기 자신을 부르는 것"), [
       concept
-    );
+    ]);
 
     expect(result).toEqual({
       ok: true,
@@ -141,7 +156,7 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(shortAnswerQuestion, makeAnswer("답변"), null);
+    const result = await policy.grade(shortAnswerQuestion, makeAnswer("답변"), []);
 
     expect(result).toEqual({
       ok: false,
@@ -156,7 +171,7 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(shortAnswerQuestion, makeAnswer("답변"), concept);
+    const result = await policy.grade(shortAnswerQuestion, makeAnswer("답변"), [concept]);
 
     expect(result).toEqual({
       ok: false,
@@ -171,7 +186,7 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), concept);
+    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), [concept]);
 
     expect(result).toEqual({
       ok: true,
@@ -191,7 +206,7 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), null);
+    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), []);
 
     expect(result).toEqual({
       ok: false,
@@ -206,7 +221,65 @@ describe("createDefaultGradingPolicy", () => {
     });
     const policy = createDefaultGradingPolicy(llm);
 
-    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), concept);
+    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), [concept]);
+
+    expect(result).toEqual({
+      ok: false,
+      error: { type: "llm_error", error: { type: "rate_limit", message: "too many requests" } }
+    });
+  });
+
+  it("grades ActiveRecall via the LLM using 2 concepts and maps the structured response to Feedback", async () => {
+    const llm = new FakeLlmClient({
+      ok: true,
+      data: { score: 55, issues: ["logicGap"], comment: "예외 조건을 더 짚어보세요" }
+    });
+    const policy = createDefaultGradingPolicy(llm);
+
+    const result = await policy.grade(activeRecallQuestion, makeAnswer("연결 답변입니다"), [
+      concept,
+      concept2
+    ]);
+
+    expect(result).toEqual({
+      ok: true,
+      feedback: {
+        answerId,
+        score: 55,
+        issues: [{ type: "logicGap" }],
+        comment: "예외 조건을 더 짚어보세요"
+      }
+    });
+  });
+
+  it("returns missing_concept when grading ActiveRecall with fewer than 2 concepts", async () => {
+    const llm = new FakeLlmClient({
+      ok: false,
+      error: { type: "network", message: "should not be called" }
+    });
+    const policy = createDefaultGradingPolicy(llm);
+
+    const result = await policy.grade(activeRecallQuestion, makeAnswer("연결 답변입니다"), [
+      concept
+    ]);
+
+    expect(result).toEqual({
+      ok: false,
+      error: { type: "missing_concept", message: expect.any(String) }
+    });
+  });
+
+  it("propagates an llm_error when grading ActiveRecall and the LLM call fails", async () => {
+    const llm = new FakeLlmClient({
+      ok: false,
+      error: { type: "rate_limit", message: "too many requests" }
+    });
+    const policy = createDefaultGradingPolicy(llm);
+
+    const result = await policy.grade(activeRecallQuestion, makeAnswer("연결 답변입니다"), [
+      concept,
+      concept2
+    ]);
 
     expect(result).toEqual({
       ok: false,

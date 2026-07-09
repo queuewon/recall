@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { formatConceptList } from "../infra/llm/conceptListFormat";
 import { extractConceptsTemplate } from "../infra/llm/extractConcepts.template";
+import { generateActiveRecallTemplate } from "../infra/llm/generateActiveRecall.template";
 import { generateEssayTemplate } from "../infra/llm/generateEssay.template";
 import { generateMultipleChoiceTemplate } from "../infra/llm/generateMultipleChoice.template";
 import { generateShortAnswerTemplate } from "../infra/llm/generateShortAnswer.template";
@@ -67,6 +69,55 @@ export function createQuestionGenerationService(deps: {
 
       const questions: Question[] = [];
       for (const item of plan) {
+        if (item.type === "ActiveRecall") {
+          const candidateConcepts = item.conceptIds
+            .map((id) => conceptsById.get(id))
+            .filter((c): c is Concept => c !== undefined);
+          if (candidateConcepts.length < 2) {
+            continue;
+          }
+
+          const result = await llm.complete(generateActiveRecallTemplate, {
+            conceptList: formatConceptList(candidateConcepts)
+          });
+          if (!result.ok) {
+            return { ok: false, error: { type: "llm_error", error: result.error } };
+          }
+
+          // 후보 풀 중 실제로 연결에 쓰인 개념만 골라 conceptIds로 남긴다 —
+          // 범위 밖/중복 인덱스는 거부한다(그대로 신뢰하면 저장 시 깨진 참조가 생긴다).
+          const usedIndexes = [...new Set(result.data.usedConceptIndexes)].filter(
+            (index) => index >= 0 && index < candidateConcepts.length
+          );
+          if (usedIndexes.length < 2) {
+            return {
+              ok: false,
+              error: {
+                type: "llm_error",
+                error: {
+                  type: "invalid_response",
+                  message: `usedConceptIndexes must reference at least 2 distinct, in-range concepts (pool size ${candidateConcepts.length}), got ${JSON.stringify(result.data.usedConceptIndexes)}`
+                }
+              }
+            };
+          }
+
+          questions.push({
+            type: "ActiveRecall",
+            id: parseQuestionId(randomUUID()),
+            noteId,
+            prompt: result.data.prompt,
+            conceptIds: usedIndexes.map((index) => {
+              const usedConcept = candidateConcepts[index];
+              if (!usedConcept) {
+                throw new Error("unreachable: index already bounds-checked");
+              }
+              return usedConcept.id;
+            })
+          });
+          continue;
+        }
+
         const concept = conceptsById.get(item.conceptId);
         if (!concept) {
           continue;

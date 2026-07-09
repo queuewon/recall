@@ -172,6 +172,58 @@ describe("answerService", () => {
     });
   });
 
+  it("grades an ActiveRecall submission via the LLM using all linked concepts", async () => {
+    const conceptId = parseConceptId("1e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e6f");
+    const conceptId2 = parseConceptId("2e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e70");
+    const concept: Concept = {
+      id: conceptId,
+      noteId,
+      term: "원화 약세",
+      explanation: "원화 가치가 하락하는 것"
+    };
+    const concept2: Concept = {
+      id: conceptId2,
+      noteId,
+      term: "수출 호재",
+      explanation: "수출에 유리하게 작용하는 것"
+    };
+    await conceptRepo.createMany([concept, concept2]);
+
+    const questionId = parseQuestionId("8b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e72");
+    const question: Question = {
+      type: "ActiveRecall",
+      id: questionId,
+      noteId,
+      prompt: "원화 약세가 항상 수출 호재가 아닌 이유 3가지",
+      conceptIds: [conceptId, conceptId2]
+    };
+    await questionRepo.create(question);
+
+    const llm = new FakeLlmClient({
+      ok: true,
+      data: { score: 60, issues: ["logicGap"], comment: "예외 상황을 더 짚어보세요" }
+    });
+    const service = createAnswerService({
+      questionRepo,
+      conceptRepo,
+      answerRepo,
+      feedbackRepo,
+      gradingPolicy: createDefaultGradingPolicy(llm)
+    });
+
+    const result = await service.submit(questionId, "연결 답변입니다");
+
+    expect(result).toEqual({
+      ok: true,
+      answer: expect.objectContaining({ content: "연결 답변입니다" }),
+      feedback: expect.objectContaining({
+        score: 60,
+        issues: [{ type: "logicGap" }],
+        comment: "예외 상황을 더 짚어보세요"
+      })
+    });
+  });
+
   it("returns question_not_found for a missing question", async () => {
     const llm = new FakeLlmClient({
       ok: false,

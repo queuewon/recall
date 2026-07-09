@@ -18,14 +18,33 @@ function toRow(question: Question): typeof questions.$inferInsert {
         ...base,
         options: JSON.stringify(question.options),
         correctIndex: question.correctIndex,
-        conceptId: null
+        conceptId: null,
+        conceptIds: null
       };
     case "ShortAnswer":
-      return { ...base, options: null, correctIndex: null, conceptId: question.conceptId ?? null };
-    case "ActiveRecall":
-      return { ...base, options: null, correctIndex: null, conceptId: question.conceptId };
+      return {
+        ...base,
+        options: null,
+        correctIndex: null,
+        conceptId: question.conceptId ?? null,
+        conceptIds: null
+      };
     case "Essay":
-      return { ...base, options: null, correctIndex: null, conceptId: question.conceptId ?? null };
+      return {
+        ...base,
+        options: null,
+        correctIndex: null,
+        conceptId: question.conceptId ?? null,
+        conceptIds: null
+      };
+    case "ActiveRecall":
+      return {
+        ...base,
+        options: null,
+        correctIndex: null,
+        conceptId: null,
+        conceptIds: JSON.stringify(question.conceptIds)
+      };
   }
 }
 
@@ -56,10 +75,14 @@ function fromRow(row: QuestionRow): Question {
         ...(row.conceptId !== null ? { conceptId: row.conceptId } : {})
       });
     case "ActiveRecall": {
-      if (row.conceptId === null) {
-        throw new Error("corrupted ActiveRecall row: missing conceptId");
+      if (row.conceptIds === null) {
+        throw new Error("corrupted ActiveRecall row: missing conceptIds");
       }
-      return QuestionSchema.parse({ ...base, type: "ActiveRecall", conceptId: row.conceptId });
+      return QuestionSchema.parse({
+        ...base,
+        type: "ActiveRecall",
+        conceptIds: JSON.parse(row.conceptIds)
+      });
     }
     default:
       throw new Error(`unknown question type in DB row: ${row.type}`);

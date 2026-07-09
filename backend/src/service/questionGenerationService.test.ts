@@ -112,6 +112,9 @@ describe("questionGenerationService", () => {
       if (template.name === "generate-essay") {
         return { ok: true, data: { prompt: "불황형 흑자를 설명하시오" } };
       }
+      if (template.name === "generate-active-recall") {
+        return { ok: true, data: { prompt: "연결 질문", usedConceptIndexes: [0, 1] } };
+      }
       throw new Error(`unexpected template: ${template.name}`);
     });
     const service = createQuestionGenerationService({
@@ -126,13 +129,134 @@ describe("questionGenerationService", () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected ok result");
-    expect(result.questions.map((q) => q.type)).toEqual(["MultipleChoice", "ShortAnswer", "Essay"]);
-    const essayQuestion = result.questions[2];
+    const rotationQuestions = result.questions.filter((q) => q.type !== "ActiveRecall");
+    expect(rotationQuestions.map((q) => q.type)).toEqual([
+      "MultipleChoice",
+      "ShortAnswer",
+      "Essay"
+    ]);
+    const essayQuestion = rotationQuestions[2];
     expect(essayQuestion?.type).toBe("Essay");
     if (essayQuestion?.type === "Essay") {
       expect(essayQuestion.conceptId).toBe(result.concepts[2]?.id);
       expect(essayQuestion.prompt).toBe("불황형 흑자를 설명하시오");
     }
+  });
+
+  it("generates an ActiveRecall question when there are 3 or more concepts, mapping usedConceptIndexes back to conceptIds", async () => {
+    const llm = new FakeLlmClient((template) => {
+      if (template.name === "extract-concepts") {
+        return {
+          ok: true,
+          data: {
+            concepts: [
+              { term: "재귀", explanation: "자기 자신을 호출하는 함수" },
+              { term: "반복", explanation: "조건이 참인 동안 되풀이하는 것" },
+              { term: "불황형 흑자", explanation: "불황 속에서도 흑자를 내는 현상" }
+            ]
+          }
+        };
+      }
+      if (template.name === "generate-multiple-choice") {
+        return {
+          ok: true,
+          data: { prompt: "재귀란?", options: ["A", "B", "C", "D"], correctIndex: 1 }
+        };
+      }
+      if (template.name === "generate-short-answer") {
+        return { ok: true, data: { prompt: "반복을 설명하세요" } };
+      }
+      if (template.name === "generate-essay") {
+        return { ok: true, data: { prompt: "불황형 흑자를 설명하시오" } };
+      }
+      if (template.name === "generate-active-recall") {
+        return {
+          ok: true,
+          data: {
+            prompt: "재귀와 불황형 흑자는 어떤 점에서 다른가?",
+            usedConceptIndexes: [0, 2]
+          }
+        };
+      }
+      throw new Error(`unexpected template: ${template.name}`);
+    });
+    const service = createQuestionGenerationService({
+      noteRepo,
+      conceptRepo,
+      questionRepo,
+      llm,
+      questionPolicy: createDefaultQuestionPolicy()
+    });
+
+    const result = await service.generateForNote(noteId);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok result");
+    const activeRecallQuestion = result.questions.find((q) => q.type === "ActiveRecall");
+    expect(activeRecallQuestion).toBeDefined();
+    if (activeRecallQuestion?.type === "ActiveRecall") {
+      expect(activeRecallQuestion.prompt).toBe("재귀와 불황형 흑자는 어떤 점에서 다른가?");
+      expect(activeRecallQuestion.conceptIds).toEqual([
+        result.concepts[0]?.id,
+        result.concepts[2]?.id
+      ]);
+    }
+    const savedQuestions = await questionRepo.findByNoteId(noteId);
+    expect(savedQuestions.some((q) => q.type === "ActiveRecall")).toBe(true);
+  });
+
+  it("returns an llm_error when the ActiveRecall response has fewer than 2 valid in-range concept indexes", async () => {
+    const llm = new FakeLlmClient((template) => {
+      if (template.name === "extract-concepts") {
+        return {
+          ok: true,
+          data: {
+            concepts: [
+              { term: "재귀", explanation: "자기 자신을 호출하는 함수" },
+              { term: "반복", explanation: "조건이 참인 동안 되풀이하는 것" },
+              { term: "불황형 흑자", explanation: "불황 속에서도 흑자를 내는 현상" }
+            ]
+          }
+        };
+      }
+      if (template.name === "generate-multiple-choice") {
+        return {
+          ok: true,
+          data: { prompt: "재귀란?", options: ["A", "B", "C", "D"], correctIndex: 1 }
+        };
+      }
+      if (template.name === "generate-short-answer") {
+        return { ok: true, data: { prompt: "반복을 설명하세요" } };
+      }
+      if (template.name === "generate-essay") {
+        return { ok: true, data: { prompt: "불황형 흑자를 설명하시오" } };
+      }
+      if (template.name === "generate-active-recall") {
+        return {
+          ok: true,
+          data: { prompt: "잘못된 질문", usedConceptIndexes: [5, 6] }
+        };
+      }
+      throw new Error(`unexpected template: ${template.name}`);
+    });
+    const service = createQuestionGenerationService({
+      noteRepo,
+      conceptRepo,
+      questionRepo,
+      llm,
+      questionPolicy: createDefaultQuestionPolicy()
+    });
+
+    const result = await service.generateForNote(noteId);
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected error result");
+    expect(result.error).toEqual({
+      type: "llm_error",
+      error: { type: "invalid_response", message: expect.any(String) }
+    });
+    expect(await conceptRepo.findByNoteId(noteId)).toEqual([]);
+    expect(await questionRepo.findByNoteId(noteId)).toEqual([]);
   });
 
   it("returns note_not_found for a missing note", async () => {
@@ -205,6 +329,9 @@ describe("questionGenerationService", () => {
           ok: true,
           data: { prompt: "질문", options: ["A", "B", "C", "D"], correctIndex: 0 }
         };
+      }
+      if (template.name === "generate-active-recall") {
+        return { ok: true, data: { prompt: "질문", usedConceptIndexes: [0, 1] } };
       }
       return { ok: true, data: { prompt: "질문" } };
     });

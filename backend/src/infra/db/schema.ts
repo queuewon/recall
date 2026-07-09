@@ -27,7 +27,8 @@ export const questions = sqliteTable("questions", {
   prompt: text("prompt").notNull(),
   options: text("options"),
   correctIndex: integer("correct_index"),
-  conceptId: text("concept_id").references(() => concepts.id)
+  conceptId: text("concept_id").references(() => concepts.id),
+  conceptIds: text("concept_ids")
 });
 
 export const answers = sqliteTable("answers", {
