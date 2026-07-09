@@ -1,3 +1,5 @@
+import { formatConceptList } from "../infra/llm/conceptListFormat";
+import { gradeActiveRecallTemplate } from "../infra/llm/gradeActiveRecall.template";
 import { gradeEssayTemplate } from "../infra/llm/gradeEssay.template";
 import { gradeShortAnswerTemplate } from "../infra/llm/gradeShortAnswer.template";
 import type { LlmClient, LlmError } from "../infra/llm/LlmClient";
@@ -6,6 +8,7 @@ import {
   type Answer,
   type Concept,
   type Feedback,
+  type FeedbackIssue,
   type MultipleChoiceQuestion,
   type Question
 } from "../domain";
@@ -47,6 +50,26 @@ export function gradeMultipleChoiceDeterministically(
   };
 }
 
+function feedbackFromLlmResult(
+  answer: Answer,
+  result:
+    | { ok: true; data: { score: number; issues: FeedbackIssue["type"][]; comment: string } }
+    | { ok: false; error: LlmError }
+): GradingResult {
+  if (!result.ok) {
+    return { ok: false, error: { type: "llm_error", error: result.error } };
+  }
+  return {
+    ok: true,
+    feedback: {
+      answerId: answer.id,
+      score: createScore(result.data.score),
+      issues: result.data.issues.map((type) => ({ type })),
+      comment: result.data.comment
+    }
+  };
+}
+
 // ShortAnswer/Essay 채점은 서로 다른 프롬프트를 쓸 뿐, 흐름과 응답 스키마
 // ({score, issues, comment})가 완전히 같아 template만 매개변수화한다.
 async function gradeWithLlm(
@@ -62,34 +85,36 @@ async function gradeWithLlm(
     question: question.prompt,
     answer: answer.content
   });
+  return feedbackFromLlmResult(answer, result);
+}
 
-  if (!result.ok) {
-    return { ok: false, error: { type: "llm_error", error: result.error } };
-  }
-
-  return {
-    ok: true,
-    feedback: {
-      answerId: answer.id,
-      score: createScore(result.data.score),
-      issues: result.data.issues.map((type) => ({ type })),
-      comment: result.data.comment
-    }
-  };
+async function gradeActiveRecallWithLlm(
+  llm: LlmClient,
+  question: Question,
+  answer: Answer,
+  concepts: Concept[]
+): Promise<GradingResult> {
+  const result = await llm.complete(gradeActiveRecallTemplate, {
+    conceptList: formatConceptList(concepts),
+    question: question.prompt,
+    answer: answer.content
+  });
+  return feedbackFromLlmResult(answer, result);
 }
 
 export interface GradingPolicy {
-  grade(question: Question, answer: Answer, concept: Concept | null): Promise<GradingResult>;
+  grade(question: Question, answer: Answer, concepts: Concept[]): Promise<GradingResult>;
 }
 
 export function createDefaultGradingPolicy(llm: LlmClient): GradingPolicy {
   return {
-    async grade(question, answer, concept) {
+    async grade(question, answer, concepts) {
       if (question.type === "MultipleChoice") {
         return gradeMultipleChoiceDeterministically(question, answer);
       }
       if (question.type === "ShortAnswer" || question.type === "Essay") {
-        if (!concept) {
+        const concept = concepts[0];
+        if (concepts.length === 0 || !concept) {
           return {
             ok: false,
             error: {
@@ -102,11 +127,23 @@ export function createDefaultGradingPolicy(llm: LlmClient): GradingPolicy {
           question.type === "ShortAnswer" ? gradeShortAnswerTemplate : gradeEssayTemplate;
         return gradeWithLlm(llm, template, question, answer, concept);
       }
+      if (question.type === "ActiveRecall") {
+        if (concepts.length < 2) {
+          return {
+            ok: false,
+            error: {
+              type: "missing_concept",
+              message: "ActiveRecall grading requires at least 2 concepts"
+            }
+          };
+        }
+        return gradeActiveRecallWithLlm(llm, question, answer, concepts);
+      }
       return {
         ok: false,
         error: {
           type: "unsupported_question_type",
-          message: `unsupported question type: ${question.type}`
+          message: "unsupported question type"
         }
       };
     }

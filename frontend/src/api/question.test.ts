@@ -31,4 +31,28 @@ describe("QuestionSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("parses a valid ActiveRecall question with 2 or more conceptIds", () => {
+    const question = {
+      type: "ActiveRecall",
+      id: "8b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e72",
+      noteId: "6b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e70",
+      prompt: "원화 약세가 항상 수출 호재가 아닌 이유 3가지",
+      conceptIds: ["1e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e6f", "2e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e70"]
+    };
+
+    expect(QuestionSchema.parse(question)).toEqual(question);
+  });
+
+  it("rejects an ActiveRecall question with fewer than 2 conceptIds", () => {
+    const result = QuestionSchema.safeParse({
+      type: "ActiveRecall",
+      id: "8b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e72",
+      noteId: "6b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e70",
+      prompt: "원화 약세가 항상 수출 호재가 아닌 이유 3가지",
+      conceptIds: ["1e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e6f"]
+    });
+
+    expect(result.success).toBe(false);
+  });
 });

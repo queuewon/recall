@@ -28,7 +28,7 @@ export const QuestionSchema = z.discriminatedUnion("type", [
     id: z.string().uuid(),
     noteId: z.string().uuid(),
     prompt: z.string(),
-    conceptId: z.string().uuid()
+    conceptIds: z.array(z.string().uuid()).min(2)
   })
 ]);
 export type Question = z.infer<typeof QuestionSchema>;

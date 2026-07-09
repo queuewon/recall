@@ -19,6 +19,7 @@ let db: DbClient;
 let repo: QuestionRepository;
 let noteId: NoteId;
 let conceptId: ConceptId;
+let conceptId2: ConceptId;
 
 beforeEach(async () => {
   db = createDbClient(":memory:");
@@ -43,7 +44,14 @@ beforeEach(async () => {
     term: "재귀",
     explanation: "자기 자신을 호출하는 함수"
   };
-  await new ConceptRepository(db).createMany([concept]);
+  conceptId2 = parseConceptId("2e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e70");
+  const concept2: Concept = {
+    id: conceptId2,
+    noteId,
+    term: "반복",
+    explanation: "조건이 참인 동안 되풀이하는 것"
+  };
+  await new ConceptRepository(db).createMany([concept, concept2]);
 });
 
 describe("QuestionRepository", () => {
@@ -113,6 +121,21 @@ describe("QuestionRepository", () => {
       id: parseQuestionId("9b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e73"),
       noteId,
       prompt: "불황형 흑자를 설명하시오"
+    };
+
+    await repo.create(question);
+    const found = await repo.findById(question.id);
+
+    expect(found).toEqual(question);
+  });
+
+  it("saves and reads back an ActiveRecall question, preserving conceptIds", async () => {
+    const question: Question = {
+      type: "ActiveRecall",
+      id: parseQuestionId("ab1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e74"),
+      noteId,
+      prompt: "원화 약세가 항상 수출 호재가 아닌 이유 3가지",
+      conceptIds: [conceptId, conceptId2]
     };
 
     await repo.create(question);

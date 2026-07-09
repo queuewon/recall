@@ -25,7 +25,7 @@ export const EssayQuestionSchema = QuestionBaseSchema.extend({
 
 export const ActiveRecallQuestionSchema = QuestionBaseSchema.extend({
   type: z.literal("ActiveRecall"),
-  conceptId: ConceptIdSchema
+  conceptIds: z.array(ConceptIdSchema).min(2)
 });
 
 export const QuestionSchema = z.discriminatedUnion("type", [
