@@ -1,0 +1,103 @@
+.page {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.titleInput {
+  display: block;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  padding: 4px 0 12px;
+  margin-bottom: 16px;
+}
+
+.titleInput::placeholder {
+  color: var(--ink-faint);
+}
+
+.editorArea {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background-color: var(--surface);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 27px,
+    var(--rule) 28px
+  );
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 28px;
+  color: var(--ink);
+  resize: vertical;
+  margin-bottom: 20px;
+}
+
+.previewPanel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.previewPanel :global(h1) {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+
+.previewPanel :global(h2) {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 18px;
+  margin: 16px 0 8px;
+  color: var(--ink);
+}
+
+.previewPanel :global(p) {
+  margin: 0 0 10px;
+}
+
+.previewPanel :global(code) {
+  font-family: var(--mono);
+  background: var(--accent-bg);
+  color: var(--accent-dark);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.previewPanel :global(pre) {
+  background: var(--ink);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+
+.previewPanel :global(pre code) {
+  background: none;
+  color: var(--bg);
+  padding: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
