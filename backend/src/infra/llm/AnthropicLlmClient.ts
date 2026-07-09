@@ -60,7 +60,11 @@ export class AnthropicLlmClient implements LlmClient {
       if (err instanceof Anthropic.APIError) {
         return { ok: false, error: { type: "network", message: err.message } };
       }
-      throw err;
+      // SDK가 네트워크 요청 전에 로컬에서 던지는 에러(예: 인증 정보 미설정)는
+      // APIError/RateLimitError가 아닌 일반 Error다 — 이것도 LlmResult 실패로
+      // 변환해야 서버 프로세스까지 크래시하지 않는다.
+      const message = err instanceof Error ? err.message : String(err);
+      return { ok: false, error: { type: "network", message } };
     }
   }
 }
