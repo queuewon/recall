@@ -8,6 +8,7 @@ import {
   parseQuestionId,
   type Answer,
   type Concept,
+  type EssayQuestion,
   type MultipleChoiceQuestion,
   type ShortAnswerQuestion
 } from "../domain";
@@ -31,6 +32,14 @@ const shortAnswerQuestion: ShortAnswerQuestion = {
   id: questionId,
   noteId,
   prompt: "재귀란 무엇인가?",
+  conceptId
+};
+
+const essayQuestion: EssayQuestion = {
+  type: "Essay",
+  id: questionId,
+  noteId,
+  prompt: "불황형 흑자를 설명하시오",
   conceptId
 };
 
@@ -148,6 +157,56 @@ describe("createDefaultGradingPolicy", () => {
     const policy = createDefaultGradingPolicy(llm);
 
     const result = await policy.grade(shortAnswerQuestion, makeAnswer("답변"), concept);
+
+    expect(result).toEqual({
+      ok: false,
+      error: { type: "llm_error", error: { type: "rate_limit", message: "too many requests" } }
+    });
+  });
+
+  it("grades Essay via the LLM and maps the structured response to Feedback", async () => {
+    const llm = new FakeLlmClient({
+      ok: true,
+      data: { score: 65, issues: ["counterexampleMissing"], comment: "반례를 더 제시하세요" }
+    });
+    const policy = createDefaultGradingPolicy(llm);
+
+    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), concept);
+
+    expect(result).toEqual({
+      ok: true,
+      feedback: {
+        answerId,
+        score: 65,
+        issues: [{ type: "counterexampleMissing" }],
+        comment: "반례를 더 제시하세요"
+      }
+    });
+  });
+
+  it("returns missing_concept when grading Essay without a concept", async () => {
+    const llm = new FakeLlmClient({
+      ok: false,
+      error: { type: "network", message: "should not be called" }
+    });
+    const policy = createDefaultGradingPolicy(llm);
+
+    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), null);
+
+    expect(result).toEqual({
+      ok: false,
+      error: { type: "missing_concept", message: expect.any(String) }
+    });
+  });
+
+  it("propagates an llm_error when grading Essay and the LLM call fails", async () => {
+    const llm = new FakeLlmClient({
+      ok: false,
+      error: { type: "rate_limit", message: "too many requests" }
+    });
+    const policy = createDefaultGradingPolicy(llm);
+
+    const result = await policy.grade(essayQuestion, makeAnswer("서술 답안입니다"), concept);
 
     expect(result).toEqual({
       ok: false,

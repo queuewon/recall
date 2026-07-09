@@ -127,6 +127,51 @@ describe("answerService", () => {
     expect(savedFeedback).not.toBeNull();
   });
 
+  it("grades an Essay submission via the LLM using the linked concept", async () => {
+    const conceptId = parseConceptId("1e2d3c4b-5a69-4788-9f0e-1a2b3c4d5e6f");
+    const concept: Concept = {
+      id: conceptId,
+      noteId,
+      term: "불황형 흑자",
+      explanation: "불황 속에서도 흑자를 내는 현상"
+    };
+    await conceptRepo.createMany([concept]);
+
+    const questionId = parseQuestionId("7b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e71");
+    const question: Question = {
+      type: "Essay",
+      id: questionId,
+      noteId,
+      prompt: "불황형 흑자를 설명하시오",
+      conceptId
+    };
+    await questionRepo.create(question);
+
+    const llm = new FakeLlmClient({
+      ok: true,
+      data: { score: 55, issues: ["counterexampleMissing"], comment: "반례를 더 제시하세요" }
+    });
+    const service = createAnswerService({
+      questionRepo,
+      conceptRepo,
+      answerRepo,
+      feedbackRepo,
+      gradingPolicy: createDefaultGradingPolicy(llm)
+    });
+
+    const result = await service.submit(questionId, "서술 답안입니다");
+
+    expect(result).toEqual({
+      ok: true,
+      answer: expect.objectContaining({ content: "서술 답안입니다" }),
+      feedback: expect.objectContaining({
+        score: 55,
+        issues: [{ type: "counterexampleMissing" }],
+        comment: "반례를 더 제시하세요"
+      })
+    });
+  });
+
   it("returns question_not_found for a missing question", async () => {
     const llm = new FakeLlmClient({
       ok: false,

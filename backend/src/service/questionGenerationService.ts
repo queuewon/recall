@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { extractConceptsTemplate } from "../infra/llm/extractConcepts.template";
+import { generateEssayTemplate } from "../infra/llm/generateEssay.template";
 import { generateMultipleChoiceTemplate } from "../infra/llm/generateMultipleChoice.template";
 import { generateShortAnswerTemplate } from "../infra/llm/generateShortAnswer.template";
 import type { LlmClient, LlmError } from "../infra/llm/LlmClient";
@@ -71,37 +72,59 @@ export function createQuestionGenerationService(deps: {
           continue;
         }
 
-        if (item.type === "MultipleChoice") {
-          const result = await llm.complete(generateMultipleChoiceTemplate, {
-            conceptTerm: concept.term,
-            conceptExplanation: concept.explanation
-          });
-          if (!result.ok) {
-            return { ok: false, error: { type: "llm_error", error: result.error } };
+        switch (item.type) {
+          case "MultipleChoice": {
+            const result = await llm.complete(generateMultipleChoiceTemplate, {
+              conceptTerm: concept.term,
+              conceptExplanation: concept.explanation
+            });
+            if (!result.ok) {
+              return { ok: false, error: { type: "llm_error", error: result.error } };
+            }
+            questions.push({
+              type: "MultipleChoice",
+              id: parseQuestionId(randomUUID()),
+              noteId,
+              prompt: result.data.prompt,
+              options: result.data.options,
+              correctIndex: result.data.correctIndex
+            });
+            break;
           }
-          questions.push({
-            type: "MultipleChoice",
-            id: parseQuestionId(randomUUID()),
-            noteId,
-            prompt: result.data.prompt,
-            options: result.data.options,
-            correctIndex: result.data.correctIndex
-          });
-        } else {
-          const result = await llm.complete(generateShortAnswerTemplate, {
-            conceptTerm: concept.term,
-            conceptExplanation: concept.explanation
-          });
-          if (!result.ok) {
-            return { ok: false, error: { type: "llm_error", error: result.error } };
+          case "ShortAnswer": {
+            const result = await llm.complete(generateShortAnswerTemplate, {
+              conceptTerm: concept.term,
+              conceptExplanation: concept.explanation
+            });
+            if (!result.ok) {
+              return { ok: false, error: { type: "llm_error", error: result.error } };
+            }
+            questions.push({
+              type: "ShortAnswer",
+              id: parseQuestionId(randomUUID()),
+              noteId,
+              prompt: result.data.prompt,
+              conceptId: concept.id
+            });
+            break;
           }
-          questions.push({
-            type: "ShortAnswer",
-            id: parseQuestionId(randomUUID()),
-            noteId,
-            prompt: result.data.prompt,
-            conceptId: concept.id
-          });
+          case "Essay": {
+            const result = await llm.complete(generateEssayTemplate, {
+              conceptTerm: concept.term,
+              conceptExplanation: concept.explanation
+            });
+            if (!result.ok) {
+              return { ok: false, error: { type: "llm_error", error: result.error } };
+            }
+            questions.push({
+              type: "Essay",
+              id: parseQuestionId(randomUUID()),
+              noteId,
+              prompt: result.data.prompt,
+              conceptId: concept.id
+            });
+            break;
+          }
         }
       }
 

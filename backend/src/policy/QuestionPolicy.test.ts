@@ -22,7 +22,7 @@ describe("createDefaultQuestionPolicy", () => {
     expect(plan.map((item) => item.conceptId)).toEqual(concepts.map((c) => c.id));
   });
 
-  it("alternates question type between MultipleChoice and ShortAnswer", () => {
+  it("rotates question type across MultipleChoice, ShortAnswer, and Essay", () => {
     const policy = createDefaultQuestionPolicy();
     const concepts = [makeConcept(0), makeConcept(1), makeConcept(2), makeConcept(3)];
 
@@ -31,8 +31,8 @@ describe("createDefaultQuestionPolicy", () => {
     expect(plan.map((item) => item.type)).toEqual([
       "MultipleChoice",
       "ShortAnswer",
-      "MultipleChoice",
-      "ShortAnswer"
+      "Essay",
+      "MultipleChoice"
     ]);
   });
 

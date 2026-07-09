@@ -86,6 +86,55 @@ describe("questionGenerationService", () => {
     expect(savedQuestions).toHaveLength(2);
   });
 
+  it("generates an Essay question once the rotation reaches the third concept", async () => {
+    const llm = new FakeLlmClient((template) => {
+      if (template.name === "extract-concepts") {
+        return {
+          ok: true,
+          data: {
+            concepts: [
+              { term: "재귀", explanation: "자기 자신을 호출하는 함수" },
+              { term: "반복", explanation: "조건이 참인 동안 되풀이하는 것" },
+              { term: "불황형 흑자", explanation: "불황 속에서도 흑자를 내는 현상" }
+            ]
+          }
+        };
+      }
+      if (template.name === "generate-multiple-choice") {
+        return {
+          ok: true,
+          data: { prompt: "재귀란?", options: ["A", "B", "C", "D"], correctIndex: 1 }
+        };
+      }
+      if (template.name === "generate-short-answer") {
+        return { ok: true, data: { prompt: "반복을 설명하세요" } };
+      }
+      if (template.name === "generate-essay") {
+        return { ok: true, data: { prompt: "불황형 흑자를 설명하시오" } };
+      }
+      throw new Error(`unexpected template: ${template.name}`);
+    });
+    const service = createQuestionGenerationService({
+      noteRepo,
+      conceptRepo,
+      questionRepo,
+      llm,
+      questionPolicy: createDefaultQuestionPolicy()
+    });
+
+    const result = await service.generateForNote(noteId);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok result");
+    expect(result.questions.map((q) => q.type)).toEqual(["MultipleChoice", "ShortAnswer", "Essay"]);
+    const essayQuestion = result.questions[2];
+    expect(essayQuestion?.type).toBe("Essay");
+    if (essayQuestion?.type === "Essay") {
+      expect(essayQuestion.conceptId).toBe(result.concepts[2]?.id);
+      expect(essayQuestion.prompt).toBe("불황형 흑자를 설명하시오");
+    }
+  });
+
   it("returns note_not_found for a missing note", async () => {
     const service = createQuestionGenerationService({
       noteRepo,

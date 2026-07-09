@@ -24,6 +24,13 @@ const shortAnswerQuestion: Question = {
   prompt: "재귀란 무엇인가?"
 };
 
+const essayQuestion: Question = {
+  type: "Essay",
+  id: "7b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e71",
+  noteId: "6b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e70",
+  prompt: "불황형 흑자를 설명하시오"
+};
+
 describe("QuestionCard", () => {
   it("submits the selected option index for a MultipleChoice question and shows feedback", async () => {
     vi.mocked(questionsApi.submitAnswer).mockResolvedValue({
@@ -66,5 +73,32 @@ describe("QuestionCard", () => {
 
     expect(await screen.findByText("보강이 필요합니다.")).toBeInTheDocument();
     expect(questionsApi.submitAnswer).toHaveBeenCalledWith(shortAnswerQuestion.id, "답변");
+    expect(screen.getByText("논리 누락")).toBeInTheDocument();
+  });
+
+  it("submits free text for an Essay question and shows feedback with issue labels", async () => {
+    vi.mocked(questionsApi.submitAnswer).mockResolvedValue({
+      answer: {
+        id: "a",
+        questionId: essayQuestion.id,
+        content: "서술 답안",
+        submittedAt: "2026-01-01T00:00:00.000Z"
+      },
+      feedback: {
+        answerId: "a",
+        score: 55,
+        issues: [{ type: "counterexampleMissing" }, { type: "conceptConfusion" }],
+        comment: "반례를 더 제시하세요"
+      }
+    });
+
+    render(<QuestionCard question={essayQuestion} />);
+    fireEvent.change(screen.getByLabelText("answer"), { target: { value: "서술 답안" } });
+    fireEvent.click(screen.getByRole("button", { name: "제출" }));
+
+    expect(await screen.findByText("반례를 더 제시하세요")).toBeInTheDocument();
+    expect(questionsApi.submitAnswer).toHaveBeenCalledWith(essayQuestion.id, "서술 답안");
+    expect(screen.getByText("반례 부족")).toBeInTheDocument();
+    expect(screen.getByText("개념 혼동")).toBeInTheDocument();
   });
 });

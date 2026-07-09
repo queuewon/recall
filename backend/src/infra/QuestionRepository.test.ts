@@ -92,6 +92,35 @@ describe("QuestionRepository", () => {
     expect(found).toEqual(question);
   });
 
+  it("saves and reads back an Essay question with a conceptId", async () => {
+    const question: Question = {
+      type: "Essay",
+      id: parseQuestionId("8b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e72"),
+      noteId,
+      prompt: "불황형 흑자를 설명하시오",
+      conceptId
+    };
+
+    await repo.create(question);
+    const found = await repo.findById(question.id);
+
+    expect(found).toEqual(question);
+  });
+
+  it("saves and reads back an Essay question without a conceptId", async () => {
+    const question: Question = {
+      type: "Essay",
+      id: parseQuestionId("9b1b7b2e-6f2e-4c1a-8f2b-1a2b3c4d5e73"),
+      noteId,
+      prompt: "불황형 흑자를 설명하시오"
+    };
+
+    await repo.create(question);
+    const found = await repo.findById(question.id);
+
+    expect(found).toEqual(question);
+  });
+
   it("lists every question for a note via findByNoteId", async () => {
     const mc: Question = {
       type: "MultipleChoice",

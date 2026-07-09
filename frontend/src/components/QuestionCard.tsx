@@ -6,6 +6,12 @@ interface QuestionCardProps {
   question: Question;
 }
 
+const ISSUE_LABELS: Record<Feedback["issues"][number]["type"], string> = {
+  logicGap: "논리 누락",
+  counterexampleMissing: "반례 부족",
+  conceptConfusion: "개념 혼동"
+};
+
 export function QuestionCard({ question }: QuestionCardProps) {
   const [content, setContent] = useState("");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -33,7 +39,7 @@ export function QuestionCard({ question }: QuestionCardProps) {
           ))}
         </div>
       )}
-      {question.type === "ShortAnswer" && (
+      {(question.type === "ShortAnswer" || question.type === "Essay") && (
         <textarea
           aria-label="answer"
           value={content}
@@ -44,6 +50,13 @@ export function QuestionCard({ question }: QuestionCardProps) {
       {feedback && (
         <div data-testid="feedback">
           <p>점수: {feedback.score}</p>
+          {feedback.issues.length > 0 && (
+            <ul>
+              {feedback.issues.map((issue) => (
+                <li key={issue.type}>{ISSUE_LABELS[issue.type]}</li>
+              ))}
+            </ul>
+          )}
           <p>{feedback.comment}</p>
         </div>
       )}
