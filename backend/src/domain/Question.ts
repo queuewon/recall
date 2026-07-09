@@ -14,7 +14,8 @@ export const MultipleChoiceQuestionSchema = QuestionBaseSchema.extend({
 });
 
 export const ShortAnswerQuestionSchema = QuestionBaseSchema.extend({
-  type: z.literal("ShortAnswer")
+  type: z.literal("ShortAnswer"),
+  conceptId: ConceptIdSchema.optional()
 });
 
 export const EssayQuestionSchema = QuestionBaseSchema.extend({
@@ -33,3 +34,8 @@ export const QuestionSchema = z.discriminatedUnion("type", [
   ActiveRecallQuestionSchema
 ]);
 export type Question = z.infer<typeof QuestionSchema>;
+
+export type MultipleChoiceQuestion = z.infer<typeof MultipleChoiceQuestionSchema>;
+export type ShortAnswerQuestion = z.infer<typeof ShortAnswerQuestionSchema>;
+export type EssayQuestion = z.infer<typeof EssayQuestionSchema>;
+export type ActiveRecallQuestion = z.infer<typeof ActiveRecallQuestionSchema>;

@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApp } from "./app";
 import type { NoteService } from "./service/noteService";
+import type { QuestionGenerationService } from "./service/questionGenerationService";
+import type { AnswerService } from "./service/answerService";
 
 function makeApp() {
   const noteService: NoteService = {
@@ -10,7 +12,15 @@ function makeApp() {
     update: vi.fn(),
     remove: vi.fn()
   };
-  return createApp({ noteService });
+  const questionGenerationService: QuestionGenerationService = {
+    generateForNote: vi.fn(),
+    listForNote: vi.fn(),
+    get: vi.fn()
+  };
+  const answerService: AnswerService = {
+    submit: vi.fn()
+  };
+  return createApp({ noteService, questionGenerationService, answerService });
 }
 
 describe("createApp", () => {

@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApp } from "../app";
 import type { NoteService } from "../service/noteService";
+import type { QuestionGenerationService } from "../service/questionGenerationService";
+import type { AnswerService } from "../service/answerService";
 import { parseNoteId, type Note } from "../domain";
 
 const sampleNote: Note = {
@@ -21,7 +23,13 @@ function makeApp(overrides: Partial<NoteService> = {}) {
     remove: vi.fn(async () => true),
     ...overrides
   };
-  return createApp({ noteService });
+  const questionGenerationService: QuestionGenerationService = {
+    generateForNote: vi.fn(),
+    listForNote: vi.fn(),
+    get: vi.fn()
+  };
+  const answerService: AnswerService = { submit: vi.fn() };
+  return createApp({ noteService, questionGenerationService, answerService });
 }
 
 function jsonRequest(method: string, body: unknown) {
